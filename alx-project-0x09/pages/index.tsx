@@ -1,28 +1,31 @@
 import ImageCard from "@/components/common/ImageCard";
-import { ImageProps } from "@/interfaces";
-import { useState } from "react";
+import React, { useState } from "react";
 
 const Home: React.FC = () => {
   const [prompt, setPrompt] = useState<string>("");
   const [imageUrl, setImageUrl] = useState<string>("");
-  const [generatedImages, setGeneratedImages] = useState<ImageProps[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
   const handleGenerateImage = async () => {
-    console.log("Generating Images");
-    // Simulate generating an image
-    console.log(process.env.NEXT_PUBLIC_GPT_API_KEY);  // Logs the API key
     setIsLoading(true);
-    // Example of generated image data
-    setTimeout(() => {
-      const newImageUrl = "https://via.placeholder.com/400"; // Replace with actual API result
-      setImageUrl(newImageUrl);
-      setGeneratedImages((prevImages) => [
-        ...prevImages,
-        { imageUrl: newImageUrl, prompt }
-      ]);
+    const resp = await fetch('/api/generate-image', {
+      method: 'POST',
+      body: JSON.stringify({
+        prompt,
+      }),
+      headers: {
+        'Content-type': 'application/json',
+      },
+    });
+
+    if (!resp.ok) {
       setIsLoading(false);
-    }, 2000);
+      return;
+    }
+
+    const data = await resp.json();
+    setImageUrl(data.message);
+    setIsLoading(false);
   };
 
   return (
